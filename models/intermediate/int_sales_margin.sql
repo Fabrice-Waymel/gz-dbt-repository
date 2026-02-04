@@ -18,11 +18,8 @@ SELECT
     ship.shipping_fee,
     ship.logcost,
     ship.ship_cost,
-    -- purchase_cost = quantity * purchase_price 
-    sales.quantity * p.purchase_price AS purchase_cost, 
-    -- margin = revenue - purchase_cost 
+    sales.quantity * p.purchase_price AS purchase_cost,
     sales.revenue - (sales.quantity * p.purchase_price) AS margin
-
 FROM sales
 LEFT JOIN p ON sales.pdt_id = p.products_id
 LEFT JOIN ship ON sales.orders_id = ship.orders_id;
