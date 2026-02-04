@@ -1,4 +1,5 @@
 version: 2
+#-------------------------------------------------------------------------------------------------    
 
 sources:
   - name: raw
@@ -10,20 +11,57 @@ sources:
     freshness:
       warn_after: {count: 1, period: day}
       error_after: {count: 2, period: day}
+#-------------------------------------------------------------------------------------------------    
 
     tables:
+#-------------------------------------------------------------------------------------------------    
       - name: sales
         identifier: raw_gz_sales
         description: "Raw sales table (alias of raw_gz_sales)."
-
+        columns:
+          - name: date_date
+            description: "date commande"
+          - name: orders_id
+            description: "clée primaire"
+          - name: pdt_id
+            description: "clée du produit"
+          - name: revenue
+            description: "valeur de la commande"
+          - name: quantity
+            description: "quantité commander"            
+#-------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
       - name: product
         identifier: raw_gz_product
         description: "Raw product table (alias of raw_gz_product)."
-
+        columns:
+          - name: products_id
+            description: "cle primaire"
+            tests:
+              - unique
+              - not_null          
+          - name: purchSE_PRICE
+            description: "prix du produit"
+#-------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
       - name: ship
         identifier: raw_gz_ship
         description: "Raw shipping table (alias of raw_gz_ship)."
-
+        columns:
+          - name: orders_id
+            description: "numero de commande"
+          - name: producshipping_feets_id
+            description: "cle primaire"
+            tests:
+              - unique
+              - not_null
+          - name: shipping_fee_1
+            description: ""
+          - name: logCost
+            description: ""
+          - name: ship_cost
+            description: ""
+#-------------------------------------------------------------------------------------------------
 
 
 
