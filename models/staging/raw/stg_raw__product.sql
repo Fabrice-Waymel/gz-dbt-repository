@@ -4,8 +4,9 @@ source as (
 ),
 renamed as (
     select 
-        ALTER COLUMN purchSE_PRICE TYPE float64;
-        purchSE_PRICE as purchase_price  
+        products_id,
+        cast(purchSE_PRICE as float64) as purchase_price
+        
     from source
 )
 select * from renamed

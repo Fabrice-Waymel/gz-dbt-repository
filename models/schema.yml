@@ -2,9 +2,10 @@ version: 2
 
 sources:
   - name: raw
-    database: "{{ target.database }}"
-    schema: "{{ target.schema }}"
-    loader: bigquery
+    #database: "{{ target.database }}"
+    #schema: "{{ target.schema }}"
+    #loader: bigquery
+    schema: gz_raw_data
     description: "Raw Greenweez data imported from BigQuery."
     freshness:
       warn_after: {count: 1, period: day}
@@ -12,12 +13,15 @@ sources:
 
     tables:
       - name: sales
+        identifier: raw_gz_sales
         description: "Raw sales table (alias of raw_gz_sales)."
 
       - name: product
+        identifier: raw_gz_product
         description: "Raw product table (alias of raw_gz_product)."
 
       - name: ship
+        identifier: raw_gz_ship
         description: "Raw shipping table (alias of raw_gz_ship)."
 
 

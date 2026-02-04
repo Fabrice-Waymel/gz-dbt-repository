@@ -3,8 +3,11 @@ source as (
     select * from {{ source('raw', 'ship') }}
 ),
 renamed as (
-    select *
+    select 
+        orders_id,
+        shipping_fee,
+        logcost,
+        cast(ship_cost as float64) as ship_cost
     from source
-    where shipping_fee_1 <> shipping_fee
 )
 select * from renamed
