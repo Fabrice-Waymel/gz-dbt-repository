@@ -2,11 +2,7 @@ WITH sales AS (
     SELECT * 
     FROM {{ ref('stg_raw__sales') }} 
 ), 
-ship AS ( 
-    SELECT * 
-    FROM {{ ref('stg_raw__ship') }} 
-),
-p AS ( 
+prod AS ( 
     SELECT * 
     FROM {{ ref('stg_raw__product') }} 
 )
@@ -15,11 +11,7 @@ SELECT
     sales.orders_id,
     sales.revenue,
     sales.quantity,
-    ship.shipping_fee,
-    ship.logcost,
-    ship.ship_cost,
-    sales.quantity * p.purchase_price AS purchase_cost,
-    sales.revenue - (sales.quantity * p.purchase_price) AS margin
-FROM sales
-LEFT JOIN p ON sales.pdt_id = p.products_id
-LEFT JOIN ship ON sales.orders_id = ship.orders_id;
+    sales.quantity * prod.purchase_price AS purchase_cost,
+    sales.revenue-(sales.quantity * prod.purchase_price) AS margin
+FROM prod
+LEFT JOIN sales ON sales.pdt_id = prod.products_id
