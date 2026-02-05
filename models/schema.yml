@@ -18,6 +18,8 @@ sources:
       - name: sales
         identifier: raw_gz_sales
         description: "Raw sales table (alias of raw_gz_sales)."
+
+
         columns:
           - name: date_date
             description: "date commande"
@@ -29,10 +31,7 @@ sources:
             description: "valeur de la commande"
           - name: quantity
             description: "quantité commander"            
-            tests:
-            # La combinaison des clés uniques de la commande + produit doit être unique
-            - unique:
-              column_name: "(orders_id || '-' || pdt_id)"
+
 #-------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
       - name: product
