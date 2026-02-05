@@ -74,3 +74,20 @@ sources:
             tests:
               - unique
               - not_null
+
+      - name: adwords
+        identifier: raw_gz_adwords
+        description: "Données publicitaires provenant de Google Adwords"
+
+
+      - name: bing
+        identifier: raw_gz_bing
+        description: "Données publicitaires provenant de bing"
+
+      - name: criteo
+        identifier: raw_gz_criteo
+        description: "Données publicitaires provenant de criteo"
+
+      - name: adwords
+        identifier: raw_gz_facebook
+        description: "Données publicitaires provenant de facebook"
