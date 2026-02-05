@@ -40,4 +40,4 @@ models:
     mart:
       +materialized: table
       finance:
-        +schema:
+        +schema: dbt_finance
