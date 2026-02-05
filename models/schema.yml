@@ -1,76 +1,107 @@
-version: 2  # 💡 Toujours la version 2, indique à dbt comment lire le fichier.
+ # schema.yml
 
-# ==============================================================================
-# 1. SOURCES
-# C'est ici qu'on déclare les données qui existent DÉJÀ dans BigQuery avant dbt.
-# ==============================================================================
+ models:
+   # Staging #
+   # ...snip...
 
-sources:
-  - name: raw                   # Alias / nom utilisé dans le code : {{ source('raw', 'sales') }}
-    schema: gz_raw_data         # Le vrai nom du dataset dans BigQuery
-    description: "Données brutes importées de Greenweez"
-    
-    tables:
-      # --- Table 1 : Ventes ---
-      - name: sales             # Alias de la table. S'il n'y a pas de clé "identifier", ça doit être le vrai nom présent dans Bigquery.
-        identifier: raw_gz_sales # Comme le schema du dataset. C'est le vrai nom de la table dans Bigquery.
-        description: "Transactions de vente, une ligne par produit par commande"
-        
-        # Tests sur la source : On stoppe en cas de données corrompues dès la source.
-        tests:
-           # La combinaison des clés uniques de la commande + produit doit être unique
-          - unique:
-              column_name: "(orders_id || '-' || pdt_id)" 
+   # Intermediate #
+   - name: int_orders_margin
+     description: margin calculation per order
+     columns:
+       - name: orders_id
+         description: primary key
+         tests:
+           - unique
+           - not_null
+       - name: margin
+         description: margin = revenue - purchase_cost
+         tests:
+           - not_null
+       - name: Purchase_cost
+         description: purchase_cost = quantity * purchase_price
+         tests:
+           - not_null
+       - name: date_date
+         description: date of the order
+         tests:
+           - not_null
+       - name: revenue
+         description: sum of revenue per order
+         tests:
+           - not_null
+       - name: quantity
+         description: sum of quantity per order
+         tests:
+           - not_null
 
+   - name: int_sales_margin
+     description: margin calculation per order line / product sales
+     columns:
+       - name: orders_id
+         description: orders key
+         tests:
+           - not_null
+       - name: products_id
+         description: products key
+         tests:
+           - not_null
+       - name: margin
+         description: margin = revenue - purchase_cost
+         tests:
+           - not_null
+       - name: Purchase_cost
+         description: purchase_cost = quantity * purchase_price
+         tests:
+           - not_null
+       - name: date_date
+         description: date of the order
+         tests:
+           - not_null
+       - name: revenue
+         description: sum of revenue per order
+         tests:
+           - not_null
+       - name: quantity
+         description: sum of quantity per order
+         tests:
+           - not_null
+     tests:
+       - unique:
+           column_name: "(orders_id || '-' || products_id)"
 
-        # (Optionnel) Config pour la freshness -> on s'assure que les données sont aussi récentes que prévu
-        config:
-          # La commande 'dbt source freshness' attend souvent un TIMESTAMP.
-          # On cast la DATE en TIMESTAMP pour que ça fonctionne
-          loaded_at_field: "CAST(date_date AS TIMESTAMP)"
-          
-          freshness:
-            # Niveau 1 : Avertissement (Le pipeline continue, mais on reçoit un warning / une alerte)
-            warn_after:
-              count: 1
-              period: day
-            # Niveau 2 : Erreur Critique (Le pipeline s'arrête pour éviter tout problème)
-            error_after:
-              count: 3
-              period: day
-        
-        columns:
-          - name: date_date
-            description: "Date d'achat"
-          - name: orders_id
-            description: "Identifiant d'une commande"
-          - name: pdt_id
-            description: "Identifiant d'un produit"
-          - name: revenue
-            description: "Montant payé"
-            tests:
-              - not_null       # Le CA ne doit pas être vide
-
-      # --- Table 2 : Produits ---
-      - name: product
-        identifier: raw_gz_product
-        description: "Catalogue produits avec chaque prix"
-        columns:
-          - name: products_id
-            description: "Clé primaire du produit"
-            tests:
-              - unique        # Pas de doublons de produits
-              - not_null
-          - name: purchase_price
-            description: "Prix d'achat fournisseur"
-
-      # --- Table 3 : Livraison ---
-      - name: ship
-        identifier: raw_gz_ship
-        description: "Données logistiques et coûts de transport"
-        columns:
-          - name: orders_id
-            description: "Clé primaire (une ligne par commande)"
-            tests:
-              - unique
-              - not_null
+   - name: int_orders_operational
+     description: operational margin calculation per order
+     columns:
+       - name: orders_id
+         description: primary key
+         tests:
+           - unique
+           - not_null
+       - name: date_date
+         description: date of the order
+         tests:
+           - not_null
+       - name: operational_margin
+         description: operational_margin = margin + shipping_fee - log_cost - ship_cost
+       - name: quantity
+         description: sum of quantity per order
+         tests:
+           - not_null
+       - name: revenue
+         description: sum of revenue per order
+         tests:
+           - not_null
+       - name: purchase_cost
+         description: purchase_cost = quantity * purchase_price
+         tests:
+           - not_null
+       - name: margin
+         description: margin = revenue - purchase_cost
+         tests:
+           - not_null
+       - name: shipping_fee
+         description: the price the customer pays for shipping
+       - name: log_cost
+         description: the cost of preparing the parcel in the distribution centre/warehouse
+       - name: ship_cost
+         description: shipping cost paid by Greenweez to the carrier/logistics provider
