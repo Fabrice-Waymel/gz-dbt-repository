@@ -7,7 +7,7 @@ prod AS (
     FROM {{ ref('stg_raw__product') }} 
 )
 SELECT 
-    sales.date_date as date_date ,
+    sales.date_date as date_date,
     sales.orders_id as orders_id,
     sales.revenue as revenue,
     sales.quantity as quantity,

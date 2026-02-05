@@ -29,10 +29,10 @@ sources:
             description: "valeur de la commande"
           - name: quantity
             description: "quantité commander"            
-            #tests:
+            tests:
             # La combinaison des clés uniques de la commande + produit doit être unique
-            #- unique:
-            #  column_name: "(orders_id || '-' || pdt_id)"
+            - unique:
+              column_name: "(orders_id || '-' || pdt_id)"
 #-------------------------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------
       - name: product
