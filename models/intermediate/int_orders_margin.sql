@@ -1,11 +1,11 @@
-WITH orders_margin AS (
+WITH margin AS (
     SELECT
         *
-    FROM {{ ref('int_orders_margin') }}
+    FROM {{ ref('int_sales_margin') }}
 )
 SELECT
     orders_id,
-    tot_margin,
-    tot_purchase_cost
-FROM orders_margin
+    sum(sales_margin) as tot_margin,
+    sum(purchase_cost) as tot_purchase_cost
+FROM margin
 group by orders_id
