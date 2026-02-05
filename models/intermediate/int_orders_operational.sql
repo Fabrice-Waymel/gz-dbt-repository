@@ -1,20 +1,17 @@
-WITH margin AS (
-    SELECT *
-    FROM {{ ref('int_orders_margin') }}
-),
-ship AS (
-    SELECT *
-    FROM {{ ref('stg_raw__ship') }}
-)
+ -- int_orders_operational.sql
 
-SELECT
-    margin.orders_id AS orders_id,
-    margin.date_date AS date_date,
-    margin.margin AS tot_margin,
-    margin.revenue AS revenue,
-    margin.quantity AS quantity,
-    margin.purchase_cost AS purchase_cost,
-    margin.margin + (ship.shipping_fee - ship.logcost - ship.ship_cost) AS operational_margin
-FROM margin
-LEFT JOIN ship
-    ON margin.orders_id = ship.orders_id
+ SELECT
+     o.orders_id
+     ,o.date_date
+     ,ROUND(o.margin + s.shipping_fee - (s.log_cost + s.ship_cost),2) AS operational_margin
+     ,o.quantity
+     ,o.revenue
+     ,o.purchase_cost
+     ,o.margin
+     ,s.shipping_fee
+     ,s.log_cost
+     ,s.ship_cost
+ FROM {{ref("int_orders_margin")}} o
+ LEFT JOIN {{ref("stg_raw__ship")}} s
+     USING(orders_id)
+ ORDER BY orders_id desc
