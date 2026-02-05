@@ -1,4 +1,3 @@
--- finance_days.sql
 with
     orders_per_day as (
         select
@@ -15,7 +14,6 @@ with
         from {{ ref("int_orders_operational") }}
         group by date_date
     )
-
 select
     date_date,
     revenue,
