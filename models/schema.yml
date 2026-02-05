@@ -1,70 +1,76 @@
-version: 2
-#-------------------------------------------------------------------------------------------------    
+version: 2  # 💡 Toujours la version 2, indique à dbt comment lire le fichier.
+
+# ==============================================================================
+# 1. SOURCES
+# C'est ici qu'on déclare les données qui existent DÉJÀ dans BigQuery avant dbt.
+# ==============================================================================
 
 sources:
-  - name: raw
-    #database: "{{ target.database }}"
-    #schema: "{{ target.schema }}"
-    #loader: bigquery
-    schema: gz_raw_data
-    description: "Raw Greenweez data imported from BigQuery."
-    freshness:
-      warn_after: {count: 1, period: day}
-      error_after: {count: 2, period: day}
-#-------------------------------------------------------------------------------------------------    
-
+  - name: raw                   # Alias / nom utilisé dans le code : {{ source('raw', 'sales') }}
+    schema: gz_raw_data         # Le vrai nom du dataset dans BigQuery
+    description: "Données brutes importées de Greenweez"
+    
     tables:
-#-------------------------------------------------------------------------------------------------    
-      - name: sales
-        identifier: raw_gz_sales
-        description: "Raw sales table (alias of raw_gz_sales)."
+      # --- Table 1 : Ventes ---
+      - name: sales             # Alias de la table. S'il n'y a pas de clé "identifier", ça doit être le vrai nom présent dans Bigquery.
+        identifier: raw_gz_sales # Comme le schema du dataset. C'est le vrai nom de la table dans Bigquery.
+        description: "Transactions de vente, une ligne par produit par commande"
+        
+        # Tests sur la source : On stoppe en cas de données corrompues dès la source.
+        tests:
+           # La combinaison des clés uniques de la commande + produit doit être unique
+          - unique:
+              column_name: "(orders_id || '-' || pdt_id)" 
 
 
+        # (Optionnel) Config pour la freshness -> on s'assure que les données sont aussi récentes que prévu
+        config:
+          # La commande 'dbt source freshness' attend souvent un TIMESTAMP.
+          # On cast la DATE en TIMESTAMP pour que ça fonctionne
+          loaded_at_field: "CAST(date_date AS TIMESTAMP)"
+          
+          freshness:
+            # Niveau 1 : Avertissement (Le pipeline continue, mais on reçoit un warning / une alerte)
+            warn_after:
+              count: 1
+              period: day
+            # Niveau 2 : Erreur Critique (Le pipeline s'arrête pour éviter tout problème)
+            error_after:
+              count: 3
+              period: day
+        
         columns:
           - name: date_date
-            description: "date commande"
+            description: "Date d'achat"
           - name: orders_id
-            description: "clée primaire"
+            description: "Identifiant d'une commande"
           - name: pdt_id
-            description: "clée du produit"
+            description: "Identifiant d'un produit"
           - name: revenue
-            description: "valeur de la commande"
-          - name: quantity
-            description: "quantité commander"            
+            description: "Montant payé"
+            tests:
+              - not_null       # Le CA ne doit pas être vide
 
-#-------------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------
+      # --- Table 2 : Produits ---
       - name: product
         identifier: raw_gz_product
-        description: "Raw product table (alias of raw_gz_product)."
+        description: "Catalogue produits avec chaque prix"
         columns:
           - name: products_id
-            description: "cle primaire"
+            description: "Clé primaire du produit"
             tests:
-              - unique
-              - not_null          
-          - name: purchSE_PRICE
-            description: "prix du produit"
-#-------------------------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------------------------
+              - unique        # Pas de doublons de produits
+              - not_null
+          - name: purchase_price
+            description: "Prix d'achat fournisseur"
+
+      # --- Table 3 : Livraison ---
       - name: ship
         identifier: raw_gz_ship
-        description: "Raw shipping table (alias of raw_gz_ship)."
+        description: "Données logistiques et coûts de transport"
         columns:
           - name: orders_id
-            description: "numero de commande"
-          - name: producshipping_feets_id
-            description: "cle primaire"
+            description: "Clé primaire (une ligne par commande)"
             tests:
               - unique
               - not_null
-          - name: shipping_fee_1
-            description: ""
-          - name: logCost
-            description: ""
-          - name: ship_cost
-            description: ""
-#-------------------------------------------------------------------------------------------------
-
-
-
