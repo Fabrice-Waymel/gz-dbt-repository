@@ -14,7 +14,13 @@ SELECT
     margin.revenue AS revenue,
     margin.quantity AS quantity,
     margin.purchase_cost AS purchase_cost,
+    ship.logcost as log_cost,
+    ship_cost AS ship_cost,
+    ship.shipping_fee as shipping_fee,
     margin.margin + (ship.shipping_fee - ship.logcost - ship.ship_cost) AS operational_margin
 FROM margin
 LEFT JOIN ship
     ON margin.orders_id = ship.orders_id
+
+
+
